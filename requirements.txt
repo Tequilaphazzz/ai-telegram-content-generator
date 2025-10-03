@@ -1,0 +1,6 @@
+flask
+openai
+Pillow
+telethon
+python-dotenv
+requests
