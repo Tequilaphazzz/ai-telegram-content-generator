@@ -1,10 +1,8 @@
 <!DOCTYPE html>
-<html lang="ru">
-<head>
+<html lang="en"> <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Генератор постов для Telegram</title>
-    <style>
+    <title>Telegram Post Generator</title> <style>
         body { font-family: sans-serif; max-width: 800px; margin: auto; padding: 20px; background-color: #f4f4f9; color: #333; }
         h1, h2 { color: #444; }
         .container { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); margin-bottom: 20px; }
@@ -22,101 +20,73 @@
 </head>
 <body>
 
-    <h1>Генератор контента для Telegram</h1>
-
-    {% if job.error %}
+    <h1>Telegram Content Generator</h1> {% if job.error %}
         <div class="error">
-            <h2>Ошибка!</h2>
-            <p>{{ job.error }}</p>
+            <h2>Error!</h2> <p>{{ job.error }}</p>
         </div>
     {% endif %}
 
     {% if not job or job.status == 'error' %}
     <div class="container">
-        <h2>Шаг 1: Задайте тему для поста</h2>
-        <form method="post">
-            <input type="text" name="topic" placeholder="Например: 'Почему коты правят интернетом'" required>
-            <button type="submit" name="action" value="start_generation">Сгенерировать!</button>
-        </form>
+        <h2>Step 1: Set a topic for the post</h2> <form method="post">
+            <input type="text" name="topic" placeholder="Example: 'Why cats rule the internet'" required> <button type="submit" name="action" value="start_generation">Generate!</button> </form>
     </div>
     {% endif %}
 
     {% if job and job.status != 'finished' %}
     <div class="container">
-        <h2>Процесс генерации по теме: "{{ job.topic }}"</h2>
-
-        {% if job.post_text %}
+        <h2>Generation process for topic: "{{ job.topic }}"</h2> {% if job.post_text %}
         <div class="result">
-            <h3>Текст поста:</h3>
-            <p>{{ job.post_text }}</p>
+            <h3>Post Text:</h3> <p>{{ job.post_text }}</p>
             {% if job.status == 'text_generation' %}
             <form method="post" style="display: inline;">
-                <button type="submit" name="action" value="approve_text" class="success">Да, отличный текст!</button>
-                <button type="submit" name="action" value="regenerate_text" class="danger">Нет, переделать</button>
-            </form>
+                <button type="submit" name="action" value="approve_text" class="success">Yes, great text!</button> <button type="submit" name="action" value="regenerate_text" class="danger">No, redo it</button> </form>
             {% else %}
-            <p><strong>✅ Текст утвержден</strong></p>
-            {% endif %}
+            <p><strong>✅ Text approved</strong></p> {% endif %}
         </div>
         <hr>
         {% endif %}
 
         {% if job.post_image %}
         <div class="result">
-            <h3>Изображение для поста:</h3>
-            <img src="{{ job.post_image }}?v={{ range(1, 1000) | random }}" alt="Сгенерированное изображение">
-            {% if job.status == 'image_generation' %}
+            <h3>Post Image:</h3> <img src="{{ job.post_image }}?v={{ range(1, 1000) | random }}" alt="Generated image"> {% if job.status == 'image_generation' %}
             <form method="post" style="display: inline;">
-                <button type="submit" name="action" value="approve_image" class="success">Да, супер картинка!</button>
-                <button type="submit" name="action" value="regenerate_image" class="danger">Нет, другую</button>
-            </form>
+                <button type="submit" name="action" value="approve_image" class="success">Yes, super picture!</button> <button type="submit" name="action" value="regenerate_image" class="danger">No, get another one</button> </form>
             {% else %}
-            <p><strong>✅ Изображение утверждено</strong></p>
-            {% endif %}
+            <p><strong>✅ Image approved</strong></p> {% endif %}
         </div>
         <hr>
         {% endif %}
 
         {% if job.story_image %}
         <div class="result">
-            <h3>Превью сториз (с заголовком):</h3>
-            <h4>Заголовок: "{{ job.story_headline }}"</h4>
-            <img src="{{ job.story_image }}?v={{ range(1, 1000) | random }}" alt="Сгенерированное сториз">
-            {% if job.status == 'headline_generation' %}
+            <h3>Story Preview (with headline):</h3> <h4>Headline: "{{ job.story_headline }}"</h4> <img src="{{ job.story_image }}?v={{ range(1, 1000) | random }}" alt="Generated story"> {% if job.status == 'headline_generation' %}
             <form method="post" style="display: inline;">
-                <button type="submit" name="action" value="approve_all" class="success">Да, заголовок подходит!</button>
-                <button type="submit" name="action" value="regenerate_headline" class="danger">Нет, новый заголовок</button>
-            </form>
+                <button type="submit" name="action" value="approve_all" class="success">Yes, the headline fits!</button> <button type="submit" name="action" value="regenerate_headline" class="danger">No, new headline</button> </form>
             {% else %}
-            <p><strong>✅ Сториз утверждена</strong></p>
-            {% endif %}
+            <p><strong>✅ Story approved</strong></p> {% endif %}
         </div>
         <hr>
         {% endif %}
 
         {% if job.status == 'approved' %}
         <div class="final-publish">
-            <h2>Всё готово к публикации!</h2>
-            <form method="post">
-                <button type="submit" name="action" value="publish" class="success">ОПУБЛИКОВАТЬ В TELEGRAM</button>
-            </form>
+            <h2>Everything is ready for publication!</h2> <form method="post">
+                <button type="submit" name="action" value="publish" class="success">PUBLISH TO TELEGRAM</button> </form>
         </div>
         {% endif %}
 
         {% if job.status == 'publishing' %}
-            <p><strong>Публикация... Пожалуйста, подождите.</strong></p>
-        {% endif %}
+            <p><strong>Publishing... Please wait.</strong></p> {% endif %}
 
     </div>
     {% endif %}
 
     {% if job.status == 'finished' %}
     <div class="container">
-        <h2>Публикация завершена!</h2>
-        <p>{{ job.publish_result }}</p>
+        <h2>Publication complete!</h2> <p>{{ job.publish_result }}</p>
         <form method="post">
-            <button type="submit" name="action" value="reset">Создать новый пост</button>
-        </form>
+            <button type="submit" name="action" value="reset">Create a new post</button> </form>
     </div>
     {% endif %}
 
