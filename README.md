@@ -4,7 +4,7 @@ This project is a demonstrational but powerful, self-hosted web application desi
 
 It takes a simple topic from you and uses AI (GPT-4o-mini and DALL-E 3) to generate a complete content package: a well-written post, a relevant image, and a matching, properly-formatted story. You get to review and approve each piece in a simple web interface before publishing it directly to your channel with a single click.
 
- \#\# 🚀 Key Features
+## 🚀 Key Features
 
   * **Interactive Web UI**: A simple, step-by-step web interface built with Flask lets you control the entire content creation process.
   * **🤖 AI Text Generation**: Uses `gpt-4o-mini` to create engaging, humorous, and well-structured Telegram posts from a single topic prompt.
