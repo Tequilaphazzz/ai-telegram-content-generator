@@ -9,16 +9,16 @@ load_dotenv()
 app = Flask(__name__)
 app.secret_key = os.getenv("FLASK_SECRET_KEY")
 
-# Убедимся, что папки для статики существуют
+# Ensure the static directories exist
 os.makedirs("static/generated", exist_ok=True)
 os.makedirs("static/fonts", exist_ok=True)
 
 
-# TODO: Не забудьте положить файл шрифта (например, Arial.ttf) в папку static/fonts
+# TODO: Don't forget to place a font file (e.g., Arial.ttf) in the static/fonts folder
 
 @app.route('/', methods=['GET', 'POST'])
 def index():
-    # Используем сессии для хранения состояния между запросами
+    # Use sessions to store state between requests
     if 'job' not in session:
         session['job'] = {}
 
@@ -31,13 +31,13 @@ def index():
             if action == 'start_generation':
                 topic = request.form.get('topic')
                 if not topic:
-                    error = "Тема не может быть пустой!"
+                    error = "Topic cannot be empty!"
                 else:
-                    # Сбрасываем старую работу и начинаем новую
+                    # Reset the old job and start a new one
                     job = {'topic': topic, 'status': 'text_generation'}
                     job['post_text'] = cg.generate_post_text(topic)
                     if not job['post_text']:
-                        error = "Не удалось сгенерировать текст. Попробуйте снова."
+                        error = "Failed to generate text. Please try again."
                         job['status'] = 'error'
 
             elif action == 'regenerate_text':
@@ -51,7 +51,7 @@ def index():
                     image_path = os.path.join("static", "generated", "post_image.png")
                     job['post_image'] = cg.generate_image(prompt, image_path)
                 else:
-                    error = "Не удалось сгенерировать промт для изображения."
+                    error = "Failed to generate image prompt."
                     job['status'] = 'error'
 
             elif action == 'regenerate_image':
@@ -68,7 +68,7 @@ def index():
                     job['story_image'] = cg.create_story_image(job['post_image'], job['story_headline'],
                                                                story_image_path)
                 else:
-                    error = "Не удалось сгенерировать заголовок или обработать изображение."
+                    error = "Failed to generate headline or process image."
                     job['status'] = 'error'
 
             elif action == 'regenerate_headline':
@@ -82,9 +82,9 @@ def index():
 
             elif action == 'publish':
                 job['status'] = 'publishing'
-                session['job'] = job  # Сохраняем перед асинхронной операцией
+                session['job'] = job  # Save before the asynchronous operation
 
-                # Запускаем асинхронную функцию публикации
+                # Run the asynchronous publishing function
                 result = asyncio.run(cg.publish_to_telegram(
                     job['post_text'],
                     job['post_image'],
@@ -98,7 +98,7 @@ def index():
                 return redirect(url_for('index'))
 
         except Exception as e:
-            error = f"Произошла непредвиденная ошибка: {e}"
+            error = f"An unexpected error occurred: {e}"
             job['status'] = 'error'
 
         session['job'] = job
