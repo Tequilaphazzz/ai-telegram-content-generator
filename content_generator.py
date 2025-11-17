@@ -5,19 +5,19 @@ import requests
 from PIL import Image, ImageDraw, ImageFont
 from telethon.sync import TelegramClient
 
-# Загрузка конфигурации из .env файла
+# Load configuration from .env file
 openai.api_key = os.getenv("OPENAI_API_KEY")
 genai.configure(api_key=os.getenv("GOOGLE_API_KEY"))
 
 
-# --- Функции для работы с ChatGPT ---
+# --- ChatGPT Functions ---
 
 def generate_post_text(topic):
-    """Генерирует текст поста с помощью ChatGPT."""
-    print("🤖 Запрос к ChatGPT на генерацию текста поста...")
+    """Generates post text using ChatGPT."""
+    print("🤖 Requesting post text generation from ChatGPT...")
     try:
         response = openai.chat.completions.create(
-            model="gpt-4o-mini",  # Используем более новую и экономичную модель
+            model="gpt-4o-mini",  # Using a newer, more economical model
             messages=[
                 {"role": "system",
                  "content": "Ты — талантливый копирайтер, который пишет короткие, смешные и увлекательные посты на русском языке."},
@@ -29,13 +29,13 @@ def generate_post_text(topic):
         )
         return response.choices[0].message.content.strip()
     except Exception as e:
-        print(f"Ошибка при генерации текста: {e}")
+        print(f"Error during text generation: {e}")
         return None
 
 
 def generate_image_prompt(post_text):
-    """На основе текста поста генерирует промт для изображения."""
-    print("🤖 Запрос к ChatGPT на генерацию промта для изображения...")
+    """Generates a prompt for an image based on the post text."""
+    print("🤖 Requesting image prompt generation from ChatGPT...")
     try:
         response = openai.chat.completions.create(
             model="gpt-4o-mini",
@@ -50,13 +50,13 @@ def generate_image_prompt(post_text):
         )
         return response.choices[0].message.content.strip()
     except Exception as e:
-        print(f"Ошибка при генерации промта для изображения: {e}")
+        print(f"Error during image prompt generation: {e}")
         return None
 
 
 def generate_story_headline(post_text):
-    """Генерирует короткий заголовок для сториз."""
-    print("🤖 Запрос к ChatGPT на генерацию заголовка для сториз...")
+    """Generates a short headline for a story."""
+    print("🤖 Requesting story headline generation from ChatGPT...")
     try:
         response = openai.chat.completions.create(
             model="gpt-4o-mini",
@@ -70,72 +70,74 @@ def generate_story_headline(post_text):
         )
         return response.choices[0].message.content.strip().replace('"', '')
     except Exception as e:
-        print(f"Ошибка при генерации заголовка для сториз: {e}")
+        print(f"Error during story headline generation: {e}")
         return None
 
 
-# --- Функции для работы с Gemini и Pillow ---
+# --- Functions for working with Gemini and Pillow ---
+# Note: The original function name was misleading, this section uses OpenAI and Pillow.
+# Keeping the original comment structure.
 
 def generate_image(prompt, output_path):
-    """Генерирует изображение с помощью OpenAI DALL-E 3 и сохраняет его."""
-    print("🎨 Запрос к OpenAI DALL-E 3 на генерацию изображения...")
+    """Generates an image using OpenAI DALL-E 3 and saves it."""
+    print("🎨 Requesting image generation from OpenAI DALL-E 3...")
 
     try:
-        # 1. Выполняем запрос на генерацию к API OpenAI
+        # 1. Make the generation request to the OpenAI API
         response = openai.images.generate(
-            model="dall-e-3",  # Используем самую качественную модель
+            model="dall-e-3",  # Use the highest quality model
             prompt=prompt,
-            size="1024x1024",  # Стандартный размер, можно выбрать 1792x1024 или 1024x1792
-            quality="hd",  # "hd" для большей детализации, "standard" для скорости
-            n=1,  # Генерируем одно изображение
+            size="1024x1024",  # Standard size, can also be 1792x1024 or 1024x1792
+            quality="hd",  # "hd" for more detail, "standard" for speed
+            n=1,  # Generate one image
         )
 
-        # 2. Получаем URL сгенерированного изображения из ответа
+        # 2. Get the URL of the generated image from the response
         image_url = response.data[0].url
-        print(f"Изображение сгенерировано. URL: {image_url}")
+        print(f"Image generated. URL: {image_url}")
 
-        # 3. Скачиваем изображение по этому URL
-        print("📥 Скачивание изображения...")
+        # 3. Download the image from this URL
+        print("📥 Downloading image...")
         image_response = requests.get(image_url)
-        # Проверяем, что запрос на скачивание прошел успешно
+        # Check if the download request was successful
         image_response.raise_for_status()
 
-        # 4. Сохраняем скачанное изображение в файл
+        # 4. Save the downloaded image to a file
         with open(output_path, 'wb') as f:
             f.write(image_response.content)
 
-        print(f"Изображение успешно сохранено в {output_path}")
+        print(f"Image successfully saved to {output_path}")
         return output_path
 
     except openai.APIError as e:
-        print(f"❌ Ошибка OpenAI API: {e}")
+        print(f"❌ OpenAI API error: {e}")
         return None
     except requests.RequestException as e:
-        print(f"❌ Ошибка при скачивании изображения: {e}")
+        print(f"❌ Error downloading image: {e}")
         return None
     except Exception as e:
-        print(f"❌ Произошла непредвиденная ошибка: {e}")
+        print(f"❌ An unexpected error occurred: {e}")
         return None
 
 
 def create_story_image(original_image_path, headline, output_path):
-    """Обрезает изображение под сториз и накладывает заголовок."""
-    print("🖼️ Обработка изображения для сториз...")
+    """Crops the image for a story and overlays the headline."""
+    print("🖼️ Processing image for story...")
     try:
         with Image.open(original_image_path) as img:
-            # 1. Обрезка под формат 9:16
+            # 1. Crop to 9:16 format
             original_width, original_height = img.size
             target_ratio = 9.0 / 16.0
 
             if (original_width / original_height) > target_ratio:
-                # Изображение шире, чем нужно. Обрезаем по горизонтали.
+                # Image is wider than needed. Crop horizontally.
                 new_width = int(target_ratio * original_height)
                 left = (original_width - new_width) / 2
                 top = 0
                 right = (original_width + new_width) / 2
                 bottom = original_height
             else:
-                # Изображение выше, чем нужно. Обрезаем по вертикали.
+                # Image is taller than needed. Crop vertically.
                 new_height = int(original_width / target_ratio)
                 left = 0
                 top = (original_height - new_height) / 2
@@ -144,70 +146,70 @@ def create_story_image(original_image_path, headline, output_path):
 
             cropped_img = img.crop((left, top, right, bottom))
 
-            # 2. Наложение текста
+            # 2. Overlay text
             draw = ImageDraw.Draw(cropped_img)
 
-            # Шрифт и размер (убедитесь, что файл шрифта Arial.ttf находится в папке static/fonts)
+            # Font and size (make sure the Arial.ttf font file is in static/fonts)
             font_path = os.path.join('static', 'fonts', 'Arial.ttf')
-            font_size = int(cropped_img.width / 10)  # Размер шрифта зависит от ширины картинки
+            font_size = int(cropped_img.width / 10)  # Font size depends on the image width
             try:
                 font = ImageFont.truetype(font_path, font_size)
             except IOError:
-                print("Шрифт не найден! Используется шрифт по умолчанию.")
+                print("Font not found! Using default font.")
                 font = ImageFont.load_default()
 
-            # Позиция текста (по центру)
+            # Text position (centered)
             text_bbox = draw.textbbox((0, 0), headline, font=font)
             text_width = text_bbox[2] - text_bbox[0]
             text_height = text_bbox[3] - text_bbox[1]
-            position = ((cropped_img.width - text_width) / 2, cropped_img.height * 0.8)  # В нижней части изображения
+            position = ((cropped_img.width - text_width) / 2, cropped_img.height * 0.8)  # In the lower part of the image
 
-            # Добавляем тень для читаемости
+            # Add a shadow for readability
             draw.text((position[0] + 2, position[1] + 2), headline, font=font, fill="black")
-            # Сам текст
+            # The text itself
             draw.text(position, headline, font=font, fill="white")
 
             cropped_img.save(output_path)
-            print(f"Изображение для сториз сохранено в {output_path}")
+            print(f"Story image saved to {output_path}")
             return output_path
     except Exception as e:
-        print(f"Ошибка при обработке изображения: {e}")
+        print(f"Error processing image: {e}")
         return None
 
 
-# --- Функция для публикации в Telegram ---
+# --- Function for publishing to Telegram ---
 
 async def publish_to_telegram(text, post_image_path, story_image_path):
-    """Публикует пост и сториз в Telegram-канал."""
-    print("🚀 Публикация в Telegram...")
+    """Publishes the post and story to the Telegram channel."""
+    print("🚀 Publishing to Telegram...")
     api_id = os.getenv("TELEGRAM_API_ID")
     api_hash = os.getenv("TELEGRAM_API_HASH")
     bot_token = os.getenv("TELEGRAM_BOT_TOKEN")
     channel_id = int(os.getenv("TELEGRAM_CHANNEL_ID"))
 
-    # Инициализируем клиент вне блока try, чтобы он был доступен в finally
+    # Initialize the client outside the try block to make it available in finally
     client = TelegramClient('bot_session', api_id, api_hash)
 
     try:
-        # 1. Запускаем клиент и АВТОРИЗУЕМСЯ с токеном бота.
-        #    Вот то самое место, где нужно было `await`.
+        # 1. Start the client and AUTHORIZE with the bot token.
+        #    This is the exact spot where `await` was needed.
         await client.start(bot_token=bot_token)
 
-        # 2. Публикуем основной пост (текст + оригинальное изображение)
+        # 2. Publish the main post (text + original image)
         await client.send_file(channel_id, post_image_path, caption=text)
-        print("✅ Пост успешно опубликован!")
+        print("✅ Post published successfully!")
 
-        # 3. Публикуем сториз (обрезанное изображение с текстом)
+        # 3. Publish the story (cropped image with text)
         await client.send_file(channel_id, story_image_path, is_story=True)
-        print("✅ Сториз успешно опубликована!")
+        print("✅ Story published successfully!")
 
-        return "Все успешно опубликовано!"
+        return "Everything published successfully!"
 
     except Exception as e:
-        print(f"Ошибка при публикации в Telegram: {e}")
-        return f"Ошибка при публикации: {e}"
+        print(f"Error publishing to Telegram: {e}")
+        return f"Error during publication: {e}"
 
     finally:
-        # 4. В любом случае (успех или ошибка) отключаемся от Telegram
-        print("🔌 Завершение сессии Telegram...")
+        # 4. In any case (success or error), disconnect from Telegram
+        print("🔌 Disconnecting from Telegram session...")
         await client.disconnect()
